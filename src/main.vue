@@ -5,7 +5,7 @@
             <span class="sp-breadcrumbs__item" :key="item.path">
                 <span class="sp-breadcrumbs__link">
                     <router-link
-                    :to="{path: item.path, query: item.query, params: item.params}"
+                    :to="{name: item.name, query: item.query, params: item.params}"
                     :disabled="$route.path === item.path" v-if="item.breadName"
                     :class="$route.path === item.path ? 'link-disabled' : ''">
                     {{item.breadName}}

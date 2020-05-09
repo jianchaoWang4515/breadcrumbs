@@ -6,26 +6,38 @@ function spBreadcrumb (routes) {
     this.routes = addRoutesId(routes);
     this.routesNameKeyObj = transformRouterNameKey(this.routes);
     this.crumbs = [];
+    this.existHome = false;
     this.init();
 }
 spBreadcrumb.prototype.init = function () {
     let historyBread = JSON.parse(sessionStorage.getItem('spBread'));
-    if (historyBread) {
-        this.crumbs = historyBread;
-        return false;
-    }
+    let historyHome = historyBread && historyBread[0] ? historyBread[0] : {};
+    let home = null;
+
     for (const key in this.routesNameKeyObj) {
         let item = this.routesNameKeyObj[key];
         let { meta = {} } = item;
         let { isHome, breadName } = meta;
         let { path, name } = item;
         if (isHome) {
-            this.crumbs = [{
+            this.existHome = true;
+            home = {
                 path,
                 breadName,
-                name
-            }];
+                name,
+                isHome: true
+            };
         }
+    }
+    // 未设置首页 初始化首页
+    if (!home || !historyBread) {
+        return false;
+    }
+    if (home && historyHome && historyHome.name !== home.name) {
+        this.crumbs = [home, ...historyBread.slice(1)];
+        sessionStorage.setItem('spBread', JSON.stringify(this.crumbs));
+    } else {
+        this.crumbs = historyBread;
     }
 };
 
@@ -64,29 +76,47 @@ spBreadcrumb.prototype.isChild = function (toRoute) {
 spBreadcrumb.prototype.setCrumbs = function (route) {
     let { path, meta = {}, query, params, name } = route;
     let { breadName } = meta;
-    if (!name) {
-        throw new Error('路由name未定义');
-    }
-    let existIndex = this.getIndex(name);
-    let base = {
-        path,
-        breadName,
-        query,
-        params,
-        name
-    };
-    if (existIndex === -1) {
-        if (this.isChild(route)) {
-            this.crumbs = [...this.crumbs, base];
-        } else if (this.theSamePrtIdIndex(name) !== -1) {
-            this.crumbs = [this.crumbs[0], ...this.crumbs.slice(1, this.theSamePrtIdIndex(name)), base];
-        } else {
-            this.crumbs = [...this.crumbs, base];
+    try {
+        if (!name) {
+            throw new Error(`${path} name未定义`);
         }
-    } else {
-        this.crumbs = [...this.crumbs.slice(0, existIndex), base];
+        let existIndex = this.getIndex(name);
+        let base = {
+            path,
+            breadName,
+            query,
+            params,
+            name
+        };
+        if (!this.crumbs.length) {
+            this.crumbs = [base];
+            return false;
+        }
+        // 面包屑中不存在当前路由
+        if (existIndex === -1) {
+            // 判断是否在当前路由的childNames中 存在直接push
+            if (this.isChild(route)) {
+                this.crumbs = [...this.crumbs, base];
+            } else if (this.theSamePrtIdIndex(name) !== -1) {
+                // 与历史面包屑中某一项属于同级路由则直接替换
+                if (this.existHome) {
+                    // 存在固定首页
+                    this.crumbs = [this.crumbs[0], ...this.crumbs.slice(1, this.theSamePrtIdIndex(name)), base];
+                } else {
+                    // 不存在固定首页
+                    this.crumbs = [...this.crumbs.slice(0, this.theSamePrtIdIndex(name)), base];
+                }
+            } else {
+                // 否则直接添加
+                this.crumbs = [...this.crumbs, base];
+            }
+        } else {
+            this.crumbs = [...this.crumbs.slice(0, existIndex), base];
+        }
+        sessionStorage.setItem('spBread', JSON.stringify(this.crumbs));
+    } catch (error) {
+        console.error(error);
     }
-    sessionStorage.setItem('spBread', JSON.stringify(this.crumbs));
 };
 
 spBreadcrumb.prototype.install = function (Vue) {
@@ -98,7 +128,7 @@ spBreadcrumb.prototype.install = function (Vue) {
             this.$crumbs = this.$spBreadcrumb.crumbs;
         },
         beforeRouteEnter (to, from, next) {
-            const { meta } = to;
+            const { meta = {} } = to;
             const { breadName } = meta;
             next((vm) => {
                 if (breadName) {
@@ -107,7 +137,7 @@ spBreadcrumb.prototype.install = function (Vue) {
             });
         },
         beforeRouteUpdate (to, from, next) {
-            const { meta } = to;
+            const { meta = {} } = to;
             const { breadName } = meta;
             if (breadName) {
                 this.$spBreadcrumb.setCrumbs(to);
