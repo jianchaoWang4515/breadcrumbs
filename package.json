@@ -1,0 +1,27 @@
+{
+  "name": "sp-breadcrumbs",
+  "version": "1.0.3",
+  "description": "vue component breadcrumbs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jianchaoWang4515/breadcrumbs.git"
+  },
+  "keywords": [
+    "vue",
+    "breadcrumbs"
+  ],
+  "author": "superchao",
+  "license": "ISC",
+  "files": [
+    "src",
+    "packages"
+  ],
+  "bugs": {
+    "url": "https://github.com/jianchaoWang4515/breadcrumbs/issues"
+  },
+  "homepage": "https://github.com/jianchaoWang4515/breadcrumbs#readme"
+}
