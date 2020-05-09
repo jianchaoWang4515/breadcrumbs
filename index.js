@@ -80,6 +80,8 @@ spBreadcrumb.prototype.setCrumbs = function (route) {
             this.crumbs = [...this.crumbs, base];
         } else if (this.theSamePrtIdIndex(name) !== -1) {
             this.crumbs = [this.crumbs[0], ...this.crumbs.slice(1, this.theSamePrtIdIndex(name)), base];
+        } else {
+            this.crumbs = [...this.crumbs, base];
         }
     } else {
         this.crumbs = [...this.crumbs.slice(0, existIndex), base];
@@ -103,6 +105,14 @@ spBreadcrumb.prototype.install = function (Vue) {
                     vm.$spBreadcrumb.setCrumbs(to);
                 }
             });
+        },
+        beforeRouteUpdate (to, from, next) {
+            const { meta } = to;
+            const { breadName } = meta;
+            if (breadName) {
+                this.$spBreadcrumb.setCrumbs(to);
+            }
+            next();
         }
     });
 
