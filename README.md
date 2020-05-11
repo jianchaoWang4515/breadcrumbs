@@ -3,7 +3,7 @@
 
 ## Install
 ```shell
-npm install breadcrumbs -S
+npm install sp-breadcrumbs -S
 ```
 
 ## Quick Start
@@ -52,11 +52,23 @@ export default routes;
 ```
 
 ## Use
+1. 使用默认样式
 ``` javascript
 <template>
     <breadcrumbs separator="/"></breadcrumbs>
 </template>
-
+```
+2. 支持slot自定义
+``` javascript
+<template>
+    <breadcrumbs>
+        <template v-slot:default="slotProps">
+          <div v-for="item in slotProps.data"></div>
+        </template>
+    </breadcrumbs>
+</template>
+```
+``` javascript
 export default {
     computed: {
         breadList () {
@@ -67,18 +79,6 @@ export default {
 ```
 
 
-## Attributes
-``` javascript
-
-export default {
-  props: {
-    // 分隔符	
-    separator: {
-      type: String,
-      default: '/'
-    },
-    // 图标分隔符 class	separatorClass存在时separator将不起作用
-    separatorClass: String
-  }
-}
-```
+## props
+1. **separator**: String, 分隔符
+1. **separatorClass**: String, 图标分隔符class, eparatorClass存在时separator将不起作用
